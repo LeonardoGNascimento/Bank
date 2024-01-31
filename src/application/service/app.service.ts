@@ -1,5 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Account } from 'src/domain/Account';
+import { EventCommand, eventsTypes } from 'src/domain/command/event.command';
 import { BankRepository } from 'src/repository/bank.repository';
 
 @Injectable()
@@ -25,5 +30,29 @@ export class AppService {
     this.bankRepository.reset();
   }
 
-  event() {}
+  eventHandler(eventCommand: EventCommand) {
+    try {
+      const eventStrategy: { [key in eventsTypes] } = {
+        deposit: () => this.deposit(eventCommand),
+        withdraw: () => this.withdraw(eventCommand),
+        transfer: () => this.transfer(eventCommand),
+      };
+
+      return eventStrategy[eventCommand.type]();
+    } catch (e) {
+      throw new BadRequestException('Event not found');
+    }
+  }
+
+  transfer(command: EventCommand) {
+    console.log('transfer');
+  }
+
+  withdraw(command: EventCommand) {
+    console.log('withdraw');
+  }
+
+  deposit(command: EventCommand) {
+    console.log('deposity');
+  }
 }

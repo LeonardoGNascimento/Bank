@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   HttpCode,
@@ -9,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import { AppService } from '../service/app.service';
+import { EventCommand } from 'src/domain/command/event.command';
 
 @Controller()
 export class AppController {
@@ -33,8 +35,8 @@ export class AppController {
     return 'OK';
   }
 
-  // @Post()
-  // event(): string {
-  //   return this.appService.getHello();
-  // }
+  @Post('/event')
+  event(@Body() eventCommand: EventCommand) {
+    return this.appService.eventHandler(eventCommand);
+  }
 }
