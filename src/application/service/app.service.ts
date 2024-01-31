@@ -5,6 +5,7 @@ import { BankRepository } from 'src/repository/bank.repository';
 @Injectable()
 export class AppService {
   constructor(private bankRepository: BankRepository) {}
+
   getBalance(account_id: string): number {
     const { balance } = this.findAccount(account_id);
     return balance;
@@ -18,6 +19,10 @@ export class AppService {
     }
 
     return account;
+  }
+
+  reset() {
+    this.bankRepository.reset();
   }
 
   event() {}

@@ -3,6 +3,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Post,
   Query,
   Res,
 } from '@nestjs/common';
@@ -22,6 +23,14 @@ export class AppController {
     } catch (e) {
       response.status(HttpStatus.NOT_FOUND).json(0);
     }
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('/reset')
+  reset() {
+    this.appService.reset();
+
+    return 'OK';
   }
 
   // @Post()

@@ -17,4 +17,13 @@ export class BankRepository {
 
     return account;
   }
+
+  reset() {
+    this.accounts = [
+      {
+        accountId: '100',
+        balance: 20,
+      },
+    ];
+  }
 }
