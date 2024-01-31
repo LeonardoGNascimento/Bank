@@ -5,16 +5,12 @@ import { BankRepository } from 'src/repository/bank.repository';
 @Injectable()
 export class AppService {
   constructor(private bankRepository: BankRepository) {}
-  balance(id: number): number {
-    try {
-      const { balance } = this.findAccount(id);
-      return balance;
-    } catch (error) {
-      return 0;
-    }
+  getBalance(account_id: string): number {
+    const { balance } = this.findAccount(account_id);
+    return balance;
   }
 
-  findAccount(id: number): Account {
+  findAccount(id: string): Account {
     const account = this.bankRepository.findAccount(id);
 
     if (!account) {
