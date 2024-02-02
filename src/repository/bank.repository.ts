@@ -1,12 +1,15 @@
 import { Account } from 'src/domain/Account';
 import { CreateAccountCommand } from 'src/domain/command/createAccount.command';
-import { DepositAccountCommand } from 'src/domain/command/deposit.command';
 
 export class BankRepository {
   accounts: Account[] = [
     {
       accountId: '1',
       balance: 20,
+    },
+    {
+      accountId: '300',
+      balance: 0,
     },
   ];
 
@@ -31,17 +34,12 @@ export class BankRepository {
     return account;
   }
 
-  deposit({ amount, destination }: DepositAccountCommand) {
+  updateAccount(account: Account) {
     const index = this.accounts.findIndex(
-      (item) => item.accountId == destination,
+      (item) => item.accountId == account.accountId,
     );
 
-    let account = this.accounts[index];
-    account.balance += amount;
-
     this.accounts[index] = account;
-
-    return account;
   }
 
   reset() {
@@ -49,6 +47,10 @@ export class BankRepository {
       {
         accountId: '1',
         balance: 20,
+      },
+      {
+        accountId: '300',
+        balance: 0,
       },
     ];
   }

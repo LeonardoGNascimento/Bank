@@ -4,10 +4,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Account } from 'src/domain/Account';
-import { EventCommand, eventsTypes } from 'src/domain/command/event.command';
-import { BankRepository } from '../../repository/bank.repository';
 import { CreateAccountCommand } from 'src/domain/command/createAccount.command';
+import { EventCommand, eventsTypes } from 'src/domain/command/event.command';
 import { DepositQuery } from 'src/domain/query/deposit.query';
+import { BankRepository } from '../../repository/bank.repository';
+import { TransferQuery } from 'src/domain/query/transfer.query';
 
 @Injectable()
 export class AppService {
@@ -26,7 +27,7 @@ export class AppService {
     const account = this.bankRepository.findAccount(id);
 
     if (!account) {
-      throw new NotFoundException('Account not found');
+      throw new NotFoundException(`Account not found`);
     }
 
     return account;
@@ -41,35 +42,71 @@ export class AppService {
   }
 
   eventHandler(eventCommand: EventCommand) {
-    try {
-      const eventStrategy: { [key in eventsTypes] } = {
-        deposit: () => this.deposit(eventCommand),
-        withdraw: () => this.withdraw(eventCommand),
-        transfer: () => this.transfer(eventCommand),
-      };
-
-      return eventStrategy[eventCommand.type]();
-    } catch (e) {
-      throw new BadRequestException('Event not found');
+    if (!['deposit', 'withdraw', 'transfer'].includes(eventCommand.type)) {
+      throw new BadRequestException('Event type invalid');
     }
+
+    if (eventCommand.amount < 1) {
+      throw new BadRequestException('Amount invalid');
+    }
+
+    const eventStrategy: { [key in eventsTypes] } = {
+      deposit: () => this.deposit(eventCommand),
+      withdraw: () => this.withdraw(eventCommand),
+      transfer: () => this.transfer(eventCommand),
+    };
+
+    return eventStrategy[eventCommand.type]();
   }
 
-  transfer(command: EventCommand) {
-    console.log('transfer');
+  updateAccount(account: Account) {
+    return this.bankRepository.updateAccount(account);
   }
 
-  withdraw(command: EventCommand) {
-    console.log('withdraw');
+  transfer({ origin, destination, amount }: EventCommand): TransferQuery {
+    const accountOrigin = this.findAccount(origin);
+    const accountDestination = this.findAccount(destination);
+
+    accountOrigin.balance -= amount;
+    accountDestination.balance += amount;
+
+    this.updateAccount(accountOrigin);
+    this.updateAccount(accountDestination);
+
+    return {
+      origin: {
+        id: accountOrigin.accountId,
+        balance: accountOrigin.balance,
+      },
+      destination: {
+        id: accountDestination.accountId,
+        balance: accountDestination.balance,
+      },
+    };
+  }
+
+  withdraw({ origin, amount }: EventCommand) {
+    const account = this.findAccount(origin);
+
+    account.balance -= amount;
+
+    this.updateAccount(account);
+
+    return {
+      origin: {
+        id: account.accountId,
+        balance: account.balance,
+      },
+    };
   }
 
   deposit({ destination, amount }: EventCommand): DepositQuery {
     try {
-      this.findAccount(destination);
+      const account = this.findAccount(destination);
 
-      const account = this.bankRepository.deposit({
-        amount,
-        destination,
-      });
+      account.balance += amount;
+
+      this.updateAccount(account);
 
       return {
         destination: {

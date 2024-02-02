@@ -1,4 +1,4 @@
-export class DepositAccountCommand {
+export interface DepositAccountCommand {
   destination: string;
   amount: number;
 }

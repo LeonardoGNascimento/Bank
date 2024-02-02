@@ -3,6 +3,6 @@ interface IDestination {
   balance: number;
 }
 
-export class DepositQuery {
+export interface DepositQuery {
   destination: IDestination;
 }

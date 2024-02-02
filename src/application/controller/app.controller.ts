@@ -36,7 +36,12 @@ export class AppController {
   }
 
   @Post('/event')
-  event(@Body() eventCommand: EventCommand) {
-    return this.appService.eventHandler(eventCommand);
+  event(@Body() eventCommand: EventCommand, @Res() res: Response) {
+    try {
+      const response = this.appService.eventHandler(eventCommand);
+      res.json(response);
+    } catch (e) {
+      res.status(e.status).json(0);
+    }
   }
 }
