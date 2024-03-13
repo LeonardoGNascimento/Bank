@@ -128,6 +128,30 @@ describe('AppService', () => {
         expect(result.destination.balance).toEqual(10);
         expect(result.origin.balance).toEqual(10);
       });
+
+      it('If you exceed the maximum limit, you must throw an exception', () => {
+        try {
+          appService.eventHandler({
+            destination: '300',
+            amount: 300,
+            origin: '1',
+            type: 'transfer',
+          });
+        } catch (e) {
+          expect(e.message).toEqual('Limit unavailable');
+        }
+      });
+
+      it('If you not exceed the maximum limit', () => {
+        const result = appService.eventHandler({
+          destination: '300',
+          amount: 220,
+          origin: '1',
+          type: 'transfer',
+        });
+
+        expect(result.origin.balance).toEqual(-200);
+      });
     });
 
     describe('withdraw', () => {

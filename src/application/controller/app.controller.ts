@@ -9,8 +9,8 @@ import {
   Res,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { AppService } from '../service/app.service';
 import { EventCommand } from 'src/domain/command/event.command';
+import { AppService } from '../service/app.service';
 
 @Controller()
 export class AppController {

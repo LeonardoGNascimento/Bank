@@ -9,6 +9,7 @@ import { EventCommand, eventsTypes } from 'src/domain/command/event.command';
 import { DepositQuery } from 'src/domain/query/deposit.query';
 import { BankRepository } from '../../repository/bank.repository';
 import { TransferQuery } from 'src/domain/query/transfer.query';
+import { Limit } from '../../domain/enum/limit';
 
 @Injectable()
 export class AppService {
@@ -63,15 +64,26 @@ export class AppService {
     return this.bankRepository.updateAccount(account);
   }
 
+  validateLimit(account: Account, amount: number) {
+    account.balance -= amount;
+
+    if (account.balance < Limit.limit) {
+      throw new BadRequestException('Limit unavailable');
+    }
+  }
+
   transfer({ origin, destination, amount }: EventCommand): TransferQuery {
     const accountOrigin = this.findAccount(origin);
     const accountDestination = this.findAccount(destination);
 
-    accountOrigin.balance -= amount;
+    this.validateLimit(accountOrigin, amount);
+
     accountDestination.balance += amount;
 
-    this.updateAccount(accountOrigin);
-    this.updateAccount(accountDestination);
+    try {
+      this.updateAccount(accountOrigin);
+      this.updateAccount(accountDestination);
+    } catch (e) {}
 
     return {
       origin: {
@@ -88,7 +100,7 @@ export class AppService {
   withdraw({ origin, amount }: EventCommand) {
     const account = this.findAccount(origin);
 
-    account.balance -= amount;
+    this.validateLimit(account, amount);
 
     this.updateAccount(account);
 
